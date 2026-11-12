@@ -129,11 +129,7 @@ FACTS = [
 ]
 
 # ============================================================================
-# 3. BUILT-IN ANSWERS: INFO (about her and the Iron Man world) and FUN (banter)
-# ============================================================================
-# Each entry is (pattern, answer). The pattern is a regular expression matched against
-# what you said, lower case, without punctuation. The whole sentence is matched.
-# {title} = your title, {name} = her name. To teach her something new, add a line.
+
 INFO = [
     (r"(?:who are you|what are you|what is your name|whats your name|introduce yourself|tell me about yourself)",
      "I am {name}, your personal AI, in the style of the  Mr. Deepak Gupta built, {title}. "
