@@ -1,0 +1,9 @@
+faster-whisper
+sounddevice
+numpy
+ollama
+pyttsx3
+pillow
+psutil
+flask
+tzdata

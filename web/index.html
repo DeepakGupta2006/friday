@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Friday</title>
+<style>
+  :root{--bg:#05080f;--panel:#0b1422;--line:#12304a;--cyan:#38e1ff;--dim:#6f93a8;--text:#d8f3ff;--me:#12304a;--warn:#ff9b3d}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:radial-gradient(ellipse at 50% 0%,#0b1d33 0,var(--bg) 60%);color:var(--text);
+    font:16px/1.45 system-ui,Segoe UI,sans-serif}
+  .app{max-width:760px;margin:0 auto;height:100%;display:flex;flex-direction:column;padding:16px}
+  header{display:flex;align-items:center;gap:14px;padding-bottom:12px}
+  .orb{width:46px;height:46px;border-radius:50%;flex:none;border:2px solid var(--cyan);
+    background:radial-gradient(circle,#9af0ff 0,var(--cyan) 30%,#0a4a63 70%,transparent 72%);
+    box-shadow:0 0 18px #38e1ff88;transition:.2s}
+  .orb.listen{animation:pulse 1s infinite}
+  .orb.think{animation:spin 1.2s linear infinite;border-style:dashed}
+  .orb.talk{animation:pulse .45s infinite}
+  @keyframes pulse{50%{transform:scale(1.14);box-shadow:0 0 34px #38e1ffcc}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  h1{font-size:20px;margin:0;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan)}
+  #state{font-size:13px;color:var(--dim)}
+  #log{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:6px 2px}
+  .msg{max-width:85%;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel);white-space:pre-wrap}
+  .me{align-self:flex-end;background:var(--me)}
+  .sys{align-self:center;color:var(--warn);font-size:14px;border-color:#5a3a1a}
+  form{display:flex;gap:8px;padding-top:12px}
+  input{flex:1;min-width:0;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:inherit}
+  input:focus{outline:2px solid var(--cyan)}
+  button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:12px;padding:0 16px;font:inherit;cursor:pointer;min-height:46px}
+  button:hover{border-color:var(--cyan)}
+  #mic.on{background:var(--cyan);color:#001018;border-color:var(--cyan)}
+  .opts{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--dim);padding-top:8px}
+  .opts label{display:flex;gap:6px;align-items:center;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="orb" id="orb"></div>
+    <div><h1 id="name">Friday</h1><div id="state">Starting up…</div></div>
+  </header>
+  <div id="log" aria-live="polite"></div>
+  <form id="f">
+    <button type="button" id="mic" title="Hold the conversation: click to talk">🎤</button>
+    <input id="q" placeholder="Type a command, or press the mic…" autocomplete="off">
+    <button>Send</button>
+  </form>
+  <div class="opts">
+    <label><input type="checkbox" id="speak" checked style="flex:none"> Speak replies</label>
+    <label><input type="checkbox" id="hands" style="flex:none"> Hands-free (keep listening)</label>
+    <button type="button" id="stop" style="min-height:0;padding:2px 10px">Stop talking</button>
+  </div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const token = new URLSearchParams(location.search).get("token") || "";
+const H = token ? {"X-Token": token} : {};
+const log = $("log"), orb = $("orb"), stateEl = $("state");
+let busy = false, rec = null, listening = false, voice = null, queue = [], speaking = false;
+
+function setState(s, t){ orb.className = "orb " + s; stateEl.textContent = t; }
+function add(text, cls){ const d = document.createElement("div"); d.className = "msg " + cls; d.textContent = text; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; }
+
+// ---------- speaking ----------
+function pickVoice(){
+  const v = speechSynthesis.getVoices();
+  voice = v.find(x => /en-GB/i.test(x.lang) && /male|ryan|george|daniel|alan/i.test(x.name)) ||
+          v.find(x => /en-GB/i.test(x.lang)) || v.find(x => /^en/i.test(x.lang)) || null;
+}
+speechSynthesis.onvoiceschanged = pickVoice; pickVoice();
+function say(text){ if(!$("speak").checked) return; queue.push(text); next(); }
+function next(){
+  if(speaking || !queue.length) return;
+  speaking = true; stopListening();
+  const u = new SpeechSynthesisUtterance(queue.shift());
+  if(voice) u.voice = voice; u.rate = 1.0; u.pitch = 0.9;
+  u.onend = u.onerror = () => { speaking = false; if(queue.length) next(); else afterSpeech(); };
+  setState("talk", "Speaking…"); speechSynthesis.speak(u);
+}
+function silence(){ queue = []; speechSynthesis.cancel(); speaking = false; }
+$("stop").onclick = () => { silence(); setState("", "Ready"); };
+function afterSpeech(){ setState("", "Ready"); if($("hands").checked && !busy) startListening(); }
+
+// ---------- listening (browser speech recognition: Chrome / Edge) ----------
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(SR){
+  rec = new SR(); rec.lang = "en-IN"; rec.interimResults = true; rec.continuous = false;
+  rec.onresult = e => {
+    let t = ""; for(const r of e.results) t += r[0].transcript;
+    $("q").value = t;
+    if(e.results[e.results.length-1].isFinal){ send(t); }
+  };
+  rec.onend = () => { listening = false; $("mic").classList.remove("on"); if(!busy && !speaking) setState("", "Ready"); };
+  rec.onerror = e => { listening = false; $("mic").classList.remove("on");
+    if(e.error === "not-allowed") add("Microphone blocked. Click the lock icon in the address bar and allow the mic.", "sys"); };
+} else { $("mic").disabled = true; $("mic").title = "Use Chrome or Edge for voice"; }
+function startListening(){ if(!rec || listening || speaking) return; silence(); try{ rec.start(); listening = true; $("mic").classList.add("on"); setState("listen", "Listening…"); }catch(e){} }
+function stopListening(){ if(rec && listening){ try{ rec.stop(); }catch(e){} } }
+$("mic").onclick = () => listening ? stopListening() : startListening();
+
+// ---------- talking to the server ----------
+async function send(text){
+  text = text.trim(); if(!text || busy) return;
+  busy = true; $("q").value = ""; add(text, "me"); stopListening(); silence(); setState("think", "Thinking…");
+  let bubble = null, acc = "";
+  try{
+    const r = await fetch("/api/chat", {method:"POST", headers:{"Content-Type":"application/json", ...H}, body: JSON.stringify({text})});
+    if(r.status === 401){ add("Wrong or missing token in the address.", "sys"); return; }
+    const rd = r.body.getReader(), dec = new TextDecoder(); let buf = "";
+    while(true){
+      const {value, done} = await rd.read(); if(done) break;
+      buf += dec.decode(value, {stream:true});
+      let i; while((i = buf.indexOf("\n")) >= 0){
+        const line = buf.slice(0, i); buf = buf.slice(i+1); if(!line) continue;
+        const m = JSON.parse(line);
+        if(m.type === "reply"){ acc += (acc ? " " : "") + m.text; if(!bubble) bubble = add("", "bot"); bubble.textContent = acc; log.scrollTop = log.scrollHeight; say(m.text); }
+        if(m.type === "done" && m.action === "exit") add("Going quiet. Reload the page to wake me.", "sys");
+      }
+    }
+  }catch(e){ add("I cannot reach the server. Is server.py still running?", "sys"); }
+  finally{ busy = false; if(!speaking) afterSpeech(); }
+}
+$("f").onsubmit = e => { e.preventDefault(); send($("q").value); };
+
+// ---------- timers and alarms ----------
+setInterval(async () => {
+  try{ const r = await fetch("/api/alerts", {headers:H}); const j = await r.json();
+    j.alerts.forEach(a => { add(a, "bot"); say(a); }); }catch(e){}
+}, 3000);
+
+// ---------- start ----------
+(async () => {
+  try{
+    const j = await (await fetch("/api/hello", {headers:H})).json();
+    $("name").textContent = j.name; document.title = j.name;
+    add(j.greeting, "bot"); setState("", "Ready");
+    $("q").placeholder = `Say or type: "${j.name}, what's the weather?"`;
+  }catch(e){ add("Cannot reach the server.", "sys"); }
+})();
+</script>
+</body>
+</html>
