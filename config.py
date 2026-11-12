@@ -128,7 +128,6 @@ FACTS = [
     "Honey never spoils. Archaeologists have eaten edible honey from ancient Egyptian tombs, {title}.",
 ]
 
-# ============================================================================
 
 INFO = [
     (r"(?:who are you|what are you|what is your name|whats your name|introduce yourself|tell me about yourself)",
