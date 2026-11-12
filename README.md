@@ -12,7 +12,7 @@ Friday is a private, voice-controlled assistant for Windows, inspired by J.A.R.V
 - Protocols such as work mode, focus mode and night mode
 - Contacts, WhatsApp messages and calls (she always asks before sending)
 - Live Wikipedia, news, currency, world time and country facts
-- Browser version and optional auto-start with Windows
+- Browser version and optional auto-start with Windows.
 
 ## Tech stack
 

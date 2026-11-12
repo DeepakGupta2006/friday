@@ -1,10 +1,10 @@
-   .venv/
-   .idea/
-   .vscode/
-   __pycache__/
-   *.pyc
-   voices/
-   memory.json
-   notes.txt
-   people.json
-   installed*.flag
+.venv/
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+voices/
+memory.json
+notes.txt
+people.json
+installed*.flag
