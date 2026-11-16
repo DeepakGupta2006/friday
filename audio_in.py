@@ -38,7 +38,7 @@ class Mic:
 
     def start(self):
         self.stream.start()
-        # measure room noise for ~1 second (stay quiet)
+      
         levels = []
         end = time.time() + 1.0
         while time.time() < end:
@@ -80,7 +80,7 @@ class Mic:
         """
         frame_ms = config.FRAME_MS
         silence_needed = config.SILENCE_MS // frame_ms
-        preroll = collections.deque(maxlen=8)  # keeps the start of the first word
+        preroll = collections.deque(maxlen=8)  
         utt: list = []
         speaking = False
         hot = 0
@@ -111,7 +111,7 @@ class Mic:
                         silent = 0
                 else:
                     hot = 0
-                    self.noise = 0.95 * self.noise + 0.05 * rms  # slowly track room noise
+                    self.noise = 0.95 * self.noise + 0.05 * rms  
                     if idle_cb and idle_cb():
                         return None
                 continue
@@ -143,7 +143,7 @@ class BargeMonitor:
         self.reset()
 
     def reset(self):
-        self.recent = collections.deque(maxlen=18)   # ~0.5 s kept for the next utterance
+        self.recent = collections.deque(maxlen=18)  
         self.loud = 0
         self.triggered = False
 

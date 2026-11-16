@@ -23,7 +23,6 @@ def bad(msg, fix):
 
 print("\nFriday pre-flight check\n")
 
-# 1. Python version
 v = sys.version_info
 if (3, 10) <= (v.major, v.minor) <= (3, 12):
     ok(f"Python {v.major}.{v.minor}.{v.micro}")
@@ -32,7 +31,7 @@ else:
         "Install Python 3.12: https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe "
         "then delete the .venv folder and run run.bat again")
 
-# 2. Packages
+
 for module, pip_name in [("numpy", "numpy"), ("sounddevice", "sounddevice"),
                          ("faster_whisper", "faster-whisper"), ("ollama", "ollama"),
                          ("pyttsx3", "pyttsx3"), ("PIL", "pillow"), ("psutil", "psutil")]:
@@ -42,7 +41,7 @@ for module, pip_name in [("numpy", "numpy"), ("sounddevice", "sounddevice"),
     except Exception as e:
         bad(f"package {pip_name} ({e})", "pip install -r requirements.txt")
 
-# 3. Ollama + model
+
 try:
     import ollama
 
@@ -65,7 +64,6 @@ except Exception as e:
     bad(f"cannot reach Ollama at {config.OLLAMA_HOST} ({e})",
         "Install Ollama from https://ollama.com/download/windows and make sure it is running (llama icon in the tray)")
 
-# 4. Microphone
 try:
     import sounddevice as sd
 
@@ -77,7 +75,7 @@ except Exception as e:
 # 5. Voice (optional upgrade)
 if os.path.exists(config.PIPER_VOICE):
     try:
-        import piper  # noqa: F401
+        import piper  
 
         ok(f"neural voice ready: {config.PIPER_VOICE_NAME}")
     except Exception:
