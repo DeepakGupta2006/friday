@@ -1,9 +1,9 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-rem 
-rem   
-rem  
+rem Installs the neural voice (Piper) and downloads a voice file.
+rem   get_voice.bat          -> male British voice  (en_GB-alan-medium)   [Jarvis]
+rem   get_voice.bat female   -> female British voice (en_GB-jenny_dioco-medium)
 
 if not exist ".venv\Scripts\python.exe" (
     echo Run run.bat once first so the environment exists, then run this again.
