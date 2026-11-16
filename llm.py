@@ -39,7 +39,7 @@ def sentence_chunks(buffer: str):
     """Split streamed text into (finished sentences, leftover) so speech can start early."""
     done, start = [], 0
     for i, ch in enumerate(buffer):
-        if ch in ".!?;:\n" and i - start >= 12:   # ignore tiny fragments like "Hi."
+        if ch in ".!?;:\n" and i - start >= 12:  
             done.append(buffer[start:i + 1].strip())
             start = i + 1
     return done, buffer[start:]

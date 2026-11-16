@@ -155,7 +155,7 @@ def convert_currency(amount: float, src: str, dst: str):
     return f"{amt} {CUR_NAME.get(src, src)} is about {shown} {CUR_NAME.get(dst, dst)}, {config.USER_TITLE}."
 
 
-# ----- countries --------------------------------------------------------------
+# countries details.
 def country_fact(kind: str, name: str):
     q = urllib.parse.quote(name)
     data = _json(f"https://restcountries.com/v3.1/name/{q}?fields=name,capital,population,currencies,languages,area")
@@ -177,7 +177,7 @@ def country_fact(kind: str, name: str):
     return None
 
 
-# ----- news -------------------------------------------------------------------
+# News Details
 def news():
     region = config.NEWS_REGION.upper()
     url = f"https://news.google.com/rss?hl=en-{region}&gl={region}&ceid={region}:en"
@@ -195,7 +195,6 @@ def news():
     return titles or None
 
 
-# ----- the router -------------------------------------------------------------
 _PRON = {"it", "this", "that", "he", "she", "they", "them", "him", "her", "me", "you", "i", "we", "there", "here",
          "what", "who", "mine", "yours", "something", "anything", "everything", "up", "good", "next", "time", "date"}
 
@@ -262,7 +261,7 @@ def answer(cmd: str):
             try:
                 r = country_fact(kind, m.group(2).strip())
             except Offline:
-                return None                       # offline: let the AI model answer from memory
+                return None                      
             if r:
                 return r, None
         # news
@@ -280,11 +279,11 @@ def answer(cmd: str):
             if not words or (topic in _PRON or words[0] in _PERSONAL):
                 return None
             if len(words) > 8 or topic[0].isdigit() or _MATHY.search(topic):
-                return None                         # sums and long chatty questions are for the AI model
+                return None                         
             try:
                 summary = wiki(topic)
             except Offline:
-                return None                         # offline: let the AI model answer from memory
+                return None                        
             if summary:
                 return summary, None
     except Offline:
