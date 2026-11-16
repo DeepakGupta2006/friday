@@ -14,13 +14,10 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HOME = os.path.expanduser("~")
 
-# ============================================================================
-# 1. IDENTITY AND PERSONALITY (Tony Stark's J.A.R.V.I.S. style)
-# ============================================================================
-ASSISTANT_NAME = "Friday"      # the name she uses for herself
-WAKE_NAMES = ["Friday", "Jarvis"]   # she answers to BOTH. Put your favourite first.
-USER_TITLE = "sir"             # what she calls you: "sir", "boss", "ma'am", or your name
-PERSONA = "jarvis"             # "jarvis" = Tony Stark's butler AI | "friday" = warm and quick
+ASSISTANT_NAME = "Friday"     
+WAKE_NAMES = ["Friday", "Jarvis"]  
+USER_TITLE = "sir"           
+PERSONA = "jarvis"          
 
 PERSONAS = {
     "jarvis": (
@@ -56,10 +53,8 @@ COMMON_RULES = (
     "If you do not know something, say so instead of guessing."
 )
 
-# ============================================================================
-# 2. THINGS SHE SAYS
-# ============================================================================
-# Short confirmations she picks from after doing something (volume, close app, screenshot...)
+#Things says
+
 ACKS = [
     "Right away, {title}.",
     "Consider it done, {title}.",
@@ -71,9 +66,9 @@ ACKS = [
     "Executing now, {title}.",
 ]
 
-# While the AI model is still thinking she says one of these so the pause is not silent
+
 THINKING_FILLER = True
-THINKING_DELAY_S = 1.3         # only if the model has not started answering after this long
+THINKING_DELAY_S = 1.3        
 THINKING_PHRASES = [
     "One moment, {title}.",
     "Running the numbers, {title}.",
@@ -84,13 +79,13 @@ THINKING_PHRASES = [
     "Scanning the archives, {title}.",
 ]
 
-# Said when you ask for something she can not do
+
 CANT_PHRASES = [
     "I'm afraid that is beyond me at the moment, {title}.",
     "That one is outside my current capabilities, {title}.",
 ]
 
-# "tell me a joke": picked at random, no AI model needed
+
 JOKES = [
     "I would tell you a UDP joke, {title}, but you might not get it.",
     "Why do programmers prefer dark mode? Because light attracts bugs.",
@@ -104,7 +99,7 @@ JOKES = [
     "My other hobby is recalibrating the repulsors. You would be surprised how quickly that becomes a pastime.",
 ]
 
-# "give me a quote" / "inspire me"
+
 QUOTES = [
     "Sometimes you gotta run before you can walk, {title}.",
     "Part of the journey is the end.",
@@ -116,7 +111,7 @@ QUOTES = [
     "A hero is only as good as the preparation behind the mission, {title}.",
 ]
 
-# "give me a fun fact"
+
 FACTS = [
     "The first Iron Man suit, the Mark One, was built in a cave from scraps, {title}. Rather humbling for the rest of us.",
     "J.A.R.V.I.S. stands for Just A Rather Very Intelligent System, {title}. I find it flattering.",
@@ -198,12 +193,8 @@ FUN = [
      "May I suggest your most important task, {title}, with a twenty-five minute timer and nothing else open. Say focus mode."),
 ]
 
-# ============================================================================
-# 4. PROTOCOLS (ROUTINES)
-# ============================================================================
-# Say "work mode", "initiate focus protocol", "activate clean slate", "engage party mode"...
-# Each protocol can: "open" apps/sites/folders/projects, "close" apps, "lock" the screen,
-# and "say" something. Names in "open" are anything you could say after the word "open".
+
+# Protocols
 ROUTINES = {
     "work": {
         "say": "Work protocol engaged, {title}. Bringing up your tools.",
@@ -243,78 +234,59 @@ ROUTINES = {
     },
 }
 
-# ============================================================================
-# 5. WAKE WORD
-# ============================================================================
-WAKE_REQUIRED = True           # True = she only reacts after you say her name
+
+WAKE_REQUIRED = True           
 WAKE_WORD = "friday"
-# Whisper sometimes mishears names. Any of these counts as the wake word:
+
 WAKE_ALIASES = ["friday", "fryday", "frida", "freddy", "fri day", "fridays",
                 "jarvis", "jarvas", "jarvus", "jarves", "jervis"]
-CONVERSATION_WINDOW_S = 45     # after waking her, follow-ups need no wake word for 45 s
-WAKE_CHIME = True              # short beep when she wakes up
+CONVERSATION_WINDOW_S = 45     
+WAKE_CHIME = True              
 
-# ============================================================================
-# 6. STOP / INTERRUPT (barge-in)
-# ============================================================================
-BARGE_IN = True                # talk over her and she stops. USE HEADPHONES. If she keeps
-                               # interrupting herself (speakers), set this to False.
-BARGE_RMS = 700                # how loud you must be to interrupt (raise if she cuts herself off)
-BARGE_MS = 360                 # how long you must talk to interrupt
-STOP_KEY = True                # pressing any key in the window also silences her
 
-# ============================================================================
-# 7. SPEECH TO TEXT (Faster-Whisper, CPU)
-# ============================================================================
-WHISPER_MODEL = "base.en"      # tiny.en = fastest | base.en = balanced | small.en = most accurate
+BARGE_IN = True                
+                               
+BARGE_RMS = 700                
+BARGE_MS = 360                 
+STOP_KEY = True                
+
+WHISPER_MODEL = "base.en"     
 WHISPER_COMPUTE = "int8"
 WHISPER_THREADS = 4
 
-# ============================================================================
-# 8. BRAIN (Ollama)
-# ============================================================================
+
 OLLAMA_HOST = "http://localhost:11434"
-LLM_MODEL = "qwen2.5:3b-instruct"   # faster: "qwen2.5:1.5b-instruct" (ollama pull it first)
+LLM_MODEL = "qwen2.5:3b-instruct"  
 MAX_REPLY_TOKENS = 150
 TEMPERATURE = 0.6
-CONTEXT_TOKENS = 2048          # smaller = faster
+CONTEXT_TOKENS = 2048          
 
-# ============================================================================
-# 9. VOICE
-# ============================================================================
-# "auto"    = neural Piper voice if installed (run get_voice.bat), else Windows voice
-# "piper"   = Piper only | "windows" = Windows built-in voice only
+
 TTS_ENGINE = "auto"
-PIPER_VOICE_NAME = "en_GB-alan-medium"       # male British, very Jarvis
-#   female British alternative: "en_GB-jenny_dioco-medium"  (run: get_voice.bat female)
+PIPER_VOICE_NAME = "en_GB-alan-medium"      
+
 PIPER_VOICE = os.path.join(BASE_DIR, "voices", PIPER_VOICE_NAME + ".onnx")
-PIPER_LENGTH_SCALE = 0.95      # below 1.0 = faster speech, above 1.0 = slower
+PIPER_LENGTH_SCALE = 0.95     
 
-VOICE_HINT = "david"           # Windows voice fallback: part of a voice name ("david", "zira")
-SPEECH_RATE = 185              # Windows voice speed
+VOICE_HINT = "david"           
+SPEECH_RATE = 185              
 
-# ============================================================================
-# 10. MICROPHONE
-# ============================================================================
-MIC_DEVICE = None              # None = default mic. Run check.py to see the device list.
+
+MIC_DEVICE = None             
 SAMPLE_RATE = 16000
 FRAME_MS = 30
-SILENCE_MS = 500               # pause length that means "I finished talking"
+SILENCE_MS = 500           
 MIN_SPEECH_MS = 300
 MAX_UTTERANCE_S = 15
-MIN_RMS = 150                  # raise if background noise triggers Friday
-SPEECH_MULT = 3.0              # speech must be this many times louder than room noise
+MIN_RMS = 150                  
+SPEECH_MULT = 3.0            
 
-# ============================================================================
-# 11. PC COMMANDS
-# ============================================================================
-HOME_CITY = "New Delhi"        # used when you ask "what's the weather" without a city
+HOME_CITY = "New Delhi"       
 
-# Shutdown / restart / sleep / sign out / empty recycle bin always ask "are you sure?"
-# first. Say yes within this many seconds.
+
 CONFIRM_WINDOW_S = 20
-SHUTDOWN_DELAY_S = 30          # shutdown and restart wait this long, so you can say "cancel shutdown"
-VOLUME_STEP = 6                # "louder" / "quieter" press the volume key this many times (2% each)
+SHUTDOWN_DELAY_S = 30         
+VOLUME_STEP = 6               
 
 
 def _known(name):
@@ -326,7 +298,6 @@ def _known(name):
     return os.path.join(HOME, name)
 
 
-# "open downloads", "open my documents folder", ...
 FOLDERS = {
     "downloads": os.path.join(HOME, "Downloads"),
     "documents": _known("Documents"),
@@ -337,46 +308,33 @@ FOLDERS = {
     "home": HOME,
 }
 
-# Your own projects. "open project friday" opens the folder,
-# "open friday in vs code" opens it in VS Code. Add your own below:
 PROJECTS = {
     "friday": BASE_DIR,
-    # "portfolio": r"C:\Users\deepak\OneDrive\Desktop\portfolio",
+   
 }
 
 SCREENSHOT_DIR = os.path.join(_known("Pictures"), "Friday Screenshots")
-NOTES_FILE = os.path.join(BASE_DIR, "notes.txt")     # "take a note ..." is appended here
+NOTES_FILE = os.path.join(BASE_DIR, "notes.txt")     
 
-# ============================================================================
-# 12. PEOPLE (contacts), WHATSAPP AND CALLS
-# ============================================================================
-# Your contacts live in people.json next to this file (name, nickname, phone, email, birthday, notes...).
-# Edit that file in Notepad, or add people by voice: "add contact Rahul number 9876543210".
 PEOPLE_FILE = os.path.join(BASE_DIR, "people.json")
-DEFAULT_COUNTRY_CODE = "91"    # added to numbers saved without a country code (91 = India)
-CALL_VIA = "whatsapp"          # "whatsapp" or "phone". Say "phone call" or "dial" for a normal call anyway.
-CONFIRM_CALLS = True           # she asks "Shall I call Mom on WhatsApp?" and waits for a yes
-CONFIRM_MESSAGES = True        # same before sending a WhatsApp message
-WHATSAPP_AUTO_SEND = True      # after confirming, she presses Enter for you. False = text is typed, you press Enter
-WHATSAPP_LOAD_DELAY_S = 5      # seconds to let WhatsApp open before she presses Enter
-WHATSAPP_CALL_DELAY_S = 6      # seconds to let the chat open before she starts the call (Ctrl+Shift+C)
-BIRTHDAY_LOOKAHEAD_DAYS = 14   # "upcoming birthdays" and the briefing look this far ahead
+DEFAULT_COUNTRY_CODE = "91"   
+CALL_VIA = "whatsapp"         
+CONFIRM_CALLS = True          
+CONFIRM_MESSAGES = True       
+WHATSAPP_AUTO_SEND = True     
+WHATSAPP_LOAD_DELAY_S = 5     
+WHATSAPP_CALL_DELAY_S = 6     
+BIRTHDAY_LOOKAHEAD_DAYS = 14  
 
 
-# ============================================================================
-# 13. LIVE KNOWLEDGE (Wikipedia, news, currency, world time)
-# ============================================================================
-# Live lookups. They need internet and send only the topic you asked about.
-ONLINE_KNOWLEDGE = True        # Wikipedia, news, currency, country facts, world time
-WIKI_SENTENCES = 2             # how many sentences of a Wikipedia summary she reads out
-NEWS_ITEMS = 4                 # headlines she reads
-NEWS_REGION = "IN"             # news country: IN, US, GB ...
+ONLINE_KNOWLEDGE = True       
+WIKI_SENTENCES = 2            
+NEWS_ITEMS = 4                
+NEWS_REGION = "IN"            
 NET_TIMEOUT_S = 6
 
 
-# ============================================================================
-# helpers used by tools.py and main.py (no need to edit)
-# ============================================================================
+
 def _title_fmt(text: str) -> str:
     return text.format(title=USER_TITLE, name=ASSISTANT_NAME)
 

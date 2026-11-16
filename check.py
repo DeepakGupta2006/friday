@@ -72,7 +72,7 @@ try:
 except Exception as e:
     bad(f"no usable microphone ({e})", "Plug in / enable a mic in Windows Settings > Sound > Input")
 
-# 5. Voice (optional upgrade)
+
 if os.path.exists(config.PIPER_VOICE):
     try:
         import piper  
