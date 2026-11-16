@@ -30,8 +30,8 @@ def _get(url: str):
         with urllib.request.urlopen(req, timeout=config.NET_TIMEOUT_S) as r:
             return r.read()
     except urllib.error.HTTPError:
-        return None                       # 404 etc: the page simply does not exist
-    except Exception as e:                # no internet, DNS, timeout
+        return None                      
+    except Exception as e:               
         raise Offline(str(e))
 
 
@@ -40,9 +40,8 @@ def _json(url: str):
     return json.loads(raw.decode("utf-8")) if raw else None
 
 
-# ----- Wikipedia ------------------------------------------------------------
 def _clean(text: str) -> str:
-    text = re.sub(r"\s*\([^()]*\)", "", text)              # (born 1879 ...), (pronunciation)
+    text = re.sub(r"\s*\([^()]*\)", "", text)           
     text = re.sub(r"\s*\[[^\]]*\]", "", text)
     return re.sub(r"\s+", " ", text).strip()
 
@@ -69,7 +68,7 @@ def wiki(topic: str, code: str = "en"):
     return None
 
 
-# ----- time in other cities ---------------------------------------------------
+#  time in other cities;
 TZ = {
     "delhi": "Asia/Kolkata", "new delhi": "Asia/Kolkata", "mumbai": "Asia/Kolkata", "kolkata": "Asia/Kolkata",
     "india": "Asia/Kolkata", "pune": "Asia/Kolkata", "bangalore": "Asia/Kolkata", "bengaluru": "Asia/Kolkata",
@@ -122,7 +121,7 @@ def world_time(place: str):
     return f"It is {when} on {day} in {place.title()}, {config.USER_TITLE}, {rel}."
 
 
-# ----- currency ---------------------------------------------------------------
+#currency
 CUR = {
     "usd": "USD", "dollar": "USD", "dollars": "USD", "us dollar": "USD", "us dollars": "USD",
     "inr": "INR", "rupee": "INR", "rupees": "INR", "indian rupee": "INR", "indian rupees": "INR",
