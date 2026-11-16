@@ -13,7 +13,7 @@ class ASR:
             compute_type=config.WHISPER_COMPUTE,
             cpu_threads=config.WHISPER_THREADS,
         )
-        # warm-up: the generator must be consumed or nothing actually runs
+        
         segments, _ = self.model.transcribe(np.zeros(16000, dtype=np.float32), beam_size=1)
         list(segments)
 
@@ -21,8 +21,8 @@ class ASR:
         segments, _ = self.model.transcribe(
             audio,
             language="en",
-            beam_size=1,                      # greedy decoding = fastest
-            vad_filter=True,                  # drops non-speech, avoids ghost text
+            beam_size=1,                      
+            vad_filter=True,                  
             vad_parameters={"min_silence_duration_ms": 300},
             condition_on_previous_text=False,
             without_timestamps=True,
