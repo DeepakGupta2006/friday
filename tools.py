@@ -66,7 +66,6 @@ SITES = {
     "stack overflow": "https://stackoverflow.com",
 }
 
-# What she launches when you say "open <name>"
 APPS = {
     "notepad": "notepad.exe",
     "calculator": "calc.exe",
@@ -95,10 +94,7 @@ APPS = {
     "mail": "outlookmail:",
     "store": "ms-windows-store:",
 }
-# Anything NOT listed above is still found automatically in your Start Menu
-# ("open vlc", "open whatsapp", "open pycharm", "open discord" ...).
 
-# What she ends when you say "close <name>" (Windows process names)
 PROCESSES = {
     "notepad": ["notepad.exe"],
     "calculator": ["CalculatorApp.exe", "Calculator.exe", "calc.exe"],
@@ -136,7 +132,7 @@ PROCESSES = {
     "media player": ["wmplayer.exe", "Microsoft.Media.Player.exe"],
     "photos": ["Microsoft.Photos.exe"],
 }
-# She refuses to close these (closing them would break Windows or end Friday herself)
+
 PROTECTED = {"explorer", "file explorer", "windows explorer", "python", "pythonw", "cmd",
              "command prompt", "terminal", "windows terminal", "powershell", "ollama",
              "system", "taskbar", "friday", "jarvis", "yourself", "pycharm", "windows",
@@ -144,7 +140,7 @@ PROTECTED = {"explorer", "file explorer", "windows explorer", "python", "pythonw
 _VAGUE = {"this", "it", "that", "everything", "all", "all windows", "window", "windows", "app", "apps",
           "all apps", "all programs"}
 
-# "open wifi settings", "open sign in settings" ...
+
 SETTINGS_PAGES = {
     "wifi": "ms-settings:network-wifi", "wi fi": "ms-settings:network-wifi",
     "network": "ms-settings:network", "bluetooth": "ms-settings:bluetooth",
@@ -160,9 +156,6 @@ SETTINGS_PAGES = {
     "accounts": "ms-settings:yourinfo", "about": "ms-settings:about",
 }
 
-# ----------------------------------------------------------------------------
-# helpers
-# ----------------------------------------------------------------------------
 
 
 def normalize(text: str) -> str:
@@ -234,7 +227,7 @@ def _clock(now):
 
 def _start(target: str) -> bool:
     try:
-        os.startfile(target)  # Windows only
+        os.startfile(target)  
         return True
     except (OSError, AttributeError):
         return False
@@ -257,9 +250,6 @@ def _pick(key: str, items: list) -> str:
     return config._title_fmt(items[i])
 
 
-# ----------------------------------------------------------------------------
-# keyboard: volume, media keys and window shortcuts (no extra packages needed)
-# ----------------------------------------------------------------------------
 _VK = {"vol_up": 0xAF, "vol_down": 0xAE, "mute": 0xAD,
        "play_pause": 0xB3, "next": 0xB0, "prev": 0xB1,
        "win": 0x5B, "d": 0x44, "alt": 0x12, "tab": 0x09, "up": 0x26, "down": 0x28,
@@ -272,7 +262,7 @@ def _press(name: str, times: int = 1) -> bool:
     user32 = ctypes.windll.user32
     for _ in range(times):
         user32.keybd_event(_VK[name], 0, 0, 0)
-        user32.keybd_event(_VK[name], 0, 2, 0)   # key up
+        user32.keybd_event(_VK[name], 0, 2, 0)   
         time.sleep(0.004)
     return True
 
@@ -289,9 +279,6 @@ def _hotkey(*names) -> bool:
     return True
 
 
-# ----------------------------------------------------------------------------
-# screen: lock, wake, screen off, stay awake
-# ----------------------------------------------------------------------------
 def lock_screen() -> bool:
     if os.name != "nt":
         return False
@@ -305,9 +292,9 @@ def wake_display() -> bool:
         return False
     k = ctypes.windll.kernel32
     k.SetThreadExecutionState.argtypes = [ctypes.c_uint32]
-    k.SetThreadExecutionState(0x00000002)          # ES_DISPLAY_REQUIRED: resets the idle timer
+    k.SetThreadExecutionState(0x00000002)          
     u = ctypes.windll.user32
-    u.mouse_event(0x0001, 1, 0, 0, 0)              # nudge the mouse one pixel and back
+    u.mouse_event(0x0001, 1, 0, 0, 0)              
     u.mouse_event(0x0001, -1, 0, 0, 0)
     return True
 
@@ -315,7 +302,7 @@ def wake_display() -> bool:
 def display_off() -> bool:
     if os.name != "nt":
         return False
-    ctypes.windll.user32.PostMessageW(0xFFFF, 0x0112, 0xF170, 2)   # SC_MONITORPOWER = off
+    ctypes.windll.user32.PostMessageW(0xFFFF, 0x0112, 0xF170, 2)  
     return True
 
 
@@ -325,7 +312,7 @@ def keep_awake(on: bool) -> bool:
         return False
     k = ctypes.windll.kernel32
     k.SetThreadExecutionState.argtypes = [ctypes.c_uint32]
-    flags = 0x80000000 | (0x00000001 | 0x00000002 if on else 0)   # ES_CONTINUOUS (+ system, display)
+    flags = 0x80000000 | (0x00000001 | 0x00000002 if on else 0)   
     k.SetThreadExecutionState(flags)
     return True
 
@@ -343,9 +330,6 @@ DYNAMIC_LOCK_REPLY = ("Dynamic lock locks your PC when your paired phone walks a
                       "Opening sign in options. Pair your phone in Bluetooth settings first.")
 
 
-# ----------------------------------------------------------------------------
-# battery, screenshot, weather, brightness, system status, internet, clipboard
-# ----------------------------------------------------------------------------
 class _PowerStatus(ctypes.Structure):
     _fields_ = [("ACLineStatus", ctypes.c_ubyte), ("BatteryFlag", ctypes.c_ubyte),
                 ("BatteryLifePercent", ctypes.c_ubyte), ("SystemStatusFlag", ctypes.c_ubyte),
@@ -472,7 +456,7 @@ def is_online() -> bool:
 def local_ip():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("10.255.255.255", 1))        # no traffic is sent
+        s.connect(("10.255.255.255", 1))        
         ip = s.getsockname()[0]
         s.close()
         return ip
@@ -509,9 +493,6 @@ def running_apps():
     return [n.strip() for n in out.splitlines() if n.strip() and n.strip().lower() not in _RUNNING_IGNORE]
 
 
-# ----------------------------------------------------------------------------
-# finding, opening and closing apps
-# ----------------------------------------------------------------------------
 _start_index = None
 
 
@@ -619,7 +600,7 @@ def close_app(name: str, force: bool = False) -> str:
         return "needsforce" if needs_force else "notrunning"
     if not _CLOSE_SAFE_NAME.fullmatch(name):
         return "unknown"
-    # not in the list: find a running app whose process or window title contains the name
+    
     action = "$x.Kill()" if force else "[void]$x.CloseMainWindow()"
     script = (f"$n='{name}'; $skip='{_PS_SKIP}'.Split(','); "
               "$p = Get-Process | Where-Object { $_.MainWindowTitle -and $skip -notcontains $_.ProcessName "
@@ -632,9 +613,6 @@ def close_app(name: str, force: bool = False) -> str:
     return "closed" if code == 0 else "notrunning" if code == 3 else "unknown"
 
 
-# ----------------------------------------------------------------------------
-# protocols (config.ROUTINES): open some apps, close others, maybe lock
-# ----------------------------------------------------------------------------
 def run_routine(key: str) -> str:
     r = config.ROUTINES[key]
     for name in r.get("close", []):
@@ -650,9 +628,6 @@ _ROUTINE_RE = re.compile(r"^(?:(?:initiate|activate|start|run|engage|enable|begi
                          r"(?:the )?(.+?)\s+(?:mode|protocol)(?: on)?$")
 
 
-# ----------------------------------------------------------------------------
-# power: shutdown / restart / sleep / sign out / recycle bin (always confirmed first)
-# ----------------------------------------------------------------------------
 _pending = {"action": None, "payload": None, "until": 0.0}
 _CONFIRM = re.compile(r"^(yes|yes please|yeah|yep|confirm|confirmed|do it|go ahead|affirmative|proceed|please do)$")
 _DENY = re.compile(r"^(no|nope|cancel|never mind|nevermind|abort|negative|dont|do not|not now)$")
@@ -682,7 +657,7 @@ def _run_power(action: str, title: str) -> str:
             subprocess.Popen(["shutdown", "/h"], creationflags=_NOWIN)
             return f"Hibernating, {title}."
         if action == "recyclebin":
-            ctypes.windll.shell32.SHEmptyRecycleBinW(None, None, 0x7)   # no prompt, no sound, no progress
+            ctypes.windll.shell32.SHEmptyRecycleBinW(None, None, 0x7)   
             return f"Recycle bin emptied, {title}."
     except OSError as e:
         return f"That did not work, {title}: {e}"
@@ -716,9 +691,6 @@ def _run_confirmed(action: str, payload, title: str) -> str:
     return "I did not understand that."
 
 
-# ----------------------------------------------------------------------------
-# timers, reminders and alarms (main loop speaks them when due)
-# ----------------------------------------------------------------------------
 _alarms: list = []
 _alarm_lock = threading.Lock()
 _UNIT_RE = r"(second|seconds|sec|secs|minute|minutes|min|mins|hour|hours)"
@@ -779,9 +751,6 @@ def next_clock_time(hour: int, minute: int, suffix: str = ""):
     return best
 
 
-# ----------------------------------------------------------------------------
-# math: "what is 25 times 4", "20 percent of 150"
-# ----------------------------------------------------------------------------
 _OPS = {"plus": "+", "add": "+", "minus": "-", "subtract": "-", "times": "*", "x": "*", "into": "*",
         "over": "/", "mod": "%", "power": "**"}
 
@@ -869,16 +838,13 @@ def calculate(expr: str):
         return None
 
 
-# ----------------------------------------------------------------------------
-# people: contacts in people.json, WhatsApp, calls, email, birthdays
-# ----------------------------------------------------------------------------
 _people_cache = {"mtime": None, "data": []}
 _MONTHS = {"january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6, "july": 7,
            "august": 8, "september": 9, "october": 10, "november": 11, "december": 12,
            "jan": 1, "feb": 2, "mar": 3, "apr": 4, "jun": 6, "jul": 7, "aug": 8, "sep": 9,
            "sept": 9, "oct": 10, "nov": 11, "dec": 12}
 _MONTH_RE = "(" + "|".join(sorted(_MONTHS, key=len, reverse=True)) + ")"
-# words that must never count as a person's name
+
 _NAME_STOP = {"me", "my", "you", "your", "him", "her", "them", "it", "the", "and", "for", "with",
               "friday", "jarvis", "what", "who", "when", "where", "how", "call", "open", "tell", "send",
               "message", "whatsapp", "email", "phone", "number", "birthday", "contact", "contacts"}
@@ -897,7 +863,7 @@ def load_people(force: bool = False) -> list:
             with open(path, encoding="utf-8") as f:
                 raw = json.load(f)
         except (OSError, ValueError):
-            return _people_cache["data"]          # keep the last good copy
+            return _people_cache["data"]          
         items = raw.get("people", []) if isinstance(raw, dict) else raw
         data = [p for p in items if isinstance(p, dict) and str(p.get("name", "")).strip()]
         _people_cache.update(mtime=mtime, data=data)
@@ -995,7 +961,7 @@ def next_birthday(p: dict, today=None):
     for y in (today.year, today.year + 1):
         try:
             dt = datetime.date(y, mo, d)
-        except ValueError:                      # 29 February in a normal year
+        except ValueError:                      
             dt = datetime.date(y, 3, 1)
         if dt >= today:
             return dt, (y - year if year else None)
@@ -1066,7 +1032,7 @@ def delete_person(p: dict, title: str) -> str:
     return f"{p['name']} removed from your contacts, {title}."
 
 
-# ---- WhatsApp, phone and email -------------------------------------------
+
 def _wa_links(number: str, text=None):
     q = urllib.parse.quote(text) if text else None
     app = f"whatsapp://send?phone={number}" + (f"&text={q}" if q else "")
@@ -1084,7 +1050,7 @@ def whatsapp_open(number: str, text=None) -> str:
 
 
 def _later(delay: float, fn):
-    t = threading.Timer(delay, fn)       # background, so Friday stays responsive meanwhile
+    t = threading.Timer(delay, fn)       
     t.daemon = True
     t.start()
 
@@ -1106,7 +1072,7 @@ def whatsapp_call(p: dict, video: bool, title: str) -> str:
         return f"I don't have a number for {p['name']}, {title}."
     how = whatsapp_open(number)
     if how == "app" and _IS_WINDOWS:
-        keys = ("ctrl", "shift", "v" if video else "c")        # WhatsApp Desktop: Ctrl+Shift+C / Ctrl+Shift+V
+        keys = ("ctrl", "shift", "v" if video else "c")        
         _later(config.WHATSAPP_CALL_DELAY_S, lambda: _hotkey(*keys))
         return (f"{'Video calling' if video else 'Calling'} {p['name']} on WhatsApp, {title}. "
                 "If it does not ring, tap the call icon.")
@@ -1162,7 +1128,7 @@ def _birthday_brief() -> str:
 
 def _handle_people(cmd: str, title: str):
     """Contacts, WhatsApp, calls, email, birthdays. Returns (reply, action) or None."""
-    # ---------- no particular person ----------
+    
     if re.search(r"\b(?:upcoming birthdays?|any birthdays?|whose birthday|birthdays? (?:today|this week|coming up|soon|next)|next birthday|who has a birthday)\b", cmd):
         ups = upcoming_birthdays(config.BIRTHDAY_LOOKAHEAD_DAYS)
         if not ups:
@@ -1189,7 +1155,7 @@ def _handle_people(cmd: str, title: str):
             return f"Added {entry['name']} with that number, {title}.", None
         return f"Added {entry['name']}, {title}. Say set {m.group(1).strip()} number to, followed by the digits.", None
 
-    # ---------- a particular person ----------
+    
     found = find_person(cmd)
     if not found:
         m = re.match(r"^(?:(?:video )?call|dial|ring) (?!me\b|a\b|an\b|the\b|my\b|it\b|back\b|up\b)([a-z]+(?: [a-z]+)?)(?: on whatsapp)?$", cmd)
@@ -1201,7 +1167,7 @@ def _handle_people(cmd: str, title: str):
     name = p["name"]
     before, after = cmd[:s].strip(), cmd[e:].strip()
 
-    # --- change the contact ---
+    
     digits = re.search(r"([0-9][0-9 ]{5,18}[0-9])$", after)
     if digits and re.search(r"\b(?:set|change|update|save|add)\b", before) and "number" in cmd:
         p["phone"] = re.sub(r"\s", "", digits.group(1))
@@ -1232,13 +1198,13 @@ def _handle_people(cmd: str, title: str):
     if re.fullmatch(r"(?:remove|delete|forget)(?: the)?(?: contact)?", before) and after in ("", "from my contacts", "from contacts", "from the contacts"):
         return _ask_confirm("delete_person", f"Shall I remove {name} from your contacts, {title}?", {"person": p}), None
 
-    # --- ask about the contact ---
+    
     if re.search(r"\b(?:number|phone number|mobile number|contact number)\b", cmd) and not re.search(r"\b(?:call|dial|ring|whatsapp|message|text|send)\b", before):
         if not p.get("phone") and not p.get("whatsapp"):
             return f"I don't have a number for {name}, {title}.", None
         return f"{name}'s number is {_speak_digits(p.get('phone') or p.get('whatsapp'))}.", None
 
-    # --- act on the contact ---
+    
     if re.search(r"\b(?:email|e mail|mail)\b", before):
         body = re.sub(r"^(?:saying|say|that says|that|about|with)\s+", "", after).strip()
         return email_person(p, body, title), None
@@ -1283,9 +1249,6 @@ def _handle_people(cmd: str, title: str):
     return None
 
 
-# ----------------------------------------------------------------------------
-# the command router
-# ----------------------------------------------------------------------------
 def _briefing(memory) -> str:
     now = datetime.datetime.now()
     parts = [f"It's {_clock(now)} on {now:%A}, {now.day} {now:%B}."]
@@ -1312,7 +1275,7 @@ def _can_do(ok: bool, title: str, what: str = "that") -> str:
 def handle(cmd: str, memory):
     title = config.USER_TITLE
 
-    # --- answer to a pending "are you sure?" (shutdown, restart, sleep, sign out, recycle bin) ---
+    
     if _pending["action"]:
         action, payload = _pending["action"], _pending.get("payload")
         live = time.time() <= _pending["until"]
@@ -1321,19 +1284,19 @@ def handle(cmd: str, memory):
             return _run_confirmed(action, payload, title), None
         if live and _DENY.match(cmd):
             return f"Standing down, {title}.", None
-        # anything else: forget the question and handle the sentence normally
+        
 
-    # --- stop talking (silent) ---
+    
     if re.match(r"^(?:ok |okay )?(stop|stop talking|stop it|be quiet|quiet|enough|cancel|never mind|nevermind|shut up)$", cmd):
         return "", None
 
-    # --- leave / standby (whole sentence only, so "quit chrome" does not close Friday) ---
+    
     if re.match(r"^(goodbye|good bye|bye|bye bye|exit|quit|shut down|shutdown|power down)(?: for now| now| please)?$", cmd):
         return f"Goodbye, {title}. Going offline.", "exit"
     if re.match(r"^(go to sleep|standby|stand by|sleep mode|sleep now)\b", cmd):
         return f"Standing by, {title}. Say my name when you need me.", "sleep"
 
-    # --- personality: jokes, quotes, facts, who are you, banter (text lives in config.py) ---
+    
     if re.fullmatch(r"(?:tell me (?:a )?joke|tell me another joke|joke|another joke|make me laugh|say something funny|tell me something funny)", cmd):
         return _pick("joke", config.JOKES), None
     if re.fullmatch(r"(?:give me a quote|tell me a quote|quote|inspire me|motivate me|say something inspiring)", cmd):
@@ -1344,9 +1307,9 @@ def handle(cmd: str, memory):
         if re.fullmatch(pattern + r"(?: please| sir)?", cmd):
             return config._title_fmt(answer), None
 
-    # --- small talk in character ---
+    
     if re.fullmatch(r"(?:thank you|thanks|thank you very much|thanks a lot|cheers|much appreciated)", cmd):
-        return f"My pleasure, {title}.", None
+        return f"My pleasure sir, {title}.", None
     if re.fullmatch(r"(?:are you there|you there|are you awake|status)", cmd):
         return f"For you, {title}, always.", None
     if re.fullmatch(r"(?:good morning|good afternoon|good evening|hello|hi|hey)", cmd):
@@ -1355,28 +1318,28 @@ def handle(cmd: str, memory):
     if re.fullmatch(r"(?:good night|night night)", cmd):
         return f"Good night, {title}. I'll keep watch.", None
 
-    # --- change what she calls you (until restart; edit USER_TITLE in config.py to keep it) ---
+    
     m = re.fullmatch(r"call me ([a-z]{2,15}(?: [a-z]{2,15})?)", cmd)
     if m:
         config.USER_TITLE = m.group(1)
         return f"Very well. From now on, {config.USER_TITLE}.", None
 
-    # --- protocols (config.ROUTINES) ---
+    
     if re.search(r"\b(?:list|what|which|show) (?:your |the |my )?(?:protocols|modes|routines)\b|\bwhat protocols\b", cmd):
         return (f"I have {', '.join(k + ' mode' for k in config.ROUTINES)}, {title}."), None
     m = _ROUTINE_RE.match(cmd)
     if m and m.group(1).strip() in config.ROUTINES:
         return run_routine(m.group(1).strip()), None
-    m = re.match(r"^(?:initiate|activate|engage) (?:the )?(.+)$", cmd)      # "activate clean slate"
+    m = re.match(r"^(?:initiate|activate|engage) (?:the )?(.+)$", cmd)      
     if m and m.group(1).strip() in config.ROUTINES:
         return run_routine(m.group(1).strip()), None
 
-    # --- people: contacts, WhatsApp, calls, email, birthdays ---
+    
     reply = _handle_people(cmd, title)
     if reply is not None:
         return reply
 
-    # --- close an app ---
+    
     m = re.match(r"^(force close|force quit|kill|close|quit|terminate|exit) (?:the |my )?(.+?)(?: app| application| program| window)?$", cmd)
     if m:
         verb, name = m.group(1), m.group(2).strip()
@@ -1395,7 +1358,7 @@ def handle(cmd: str, memory):
             return "I can only close apps on Windows.", None
         return f"I'm not sure what {name} is, {title}.", None
 
-    # --- power (always asks first) ---
+    
     if re.search(r"\bcancel (?:the )?(?:shutdown|restart|reboot)\b|\babort (?:the )?(?:shutdown|restart)\b", cmd):
         if os.name == "nt":
             subprocess.run(["shutdown", "/a"], capture_output=True, creationflags=_NOWIN)
@@ -1413,7 +1376,7 @@ def handle(cmd: str, memory):
     if re.search(r"\bempty (?:the |my )?(?:recycle bin|trash|bin)\b", cmd):
         return _ask_power("recyclebin", title), None
 
-    # --- screen: lock / unlock / wake / off / stay awake ---
+    
     if re.search(r"\block (?:the |my )?(?:computer|pc|laptop|screen|workstation|system)\b|\block up\b", cmd):
         if lock_screen():
             return f"Locking up, {title}.", None
@@ -1442,7 +1405,7 @@ def handle(cmd: str, memory):
         return (f"Normal sleep settings restored, {title}." if keep_awake(False)
                 else "I can only do that on Windows."), None
 
-    # --- time / date ---
+    
     if re.search(r"\b(what time is it|whats the time|what is the time|tell me the time|current time)\b", cmd):
         return f"It's {_clock(datetime.datetime.now())}, {title}.", None
     if re.search(r"\b(whats the date|what is the date|whats todays date|what day is it|todays date|tell me the date)\b", cmd):
@@ -1451,7 +1414,7 @@ def handle(cmd: str, memory):
     if re.search(r"\bwhat year is it\b", cmd):
         return f"It is {datetime.datetime.now():%Y}, {title}.", None
 
-    # --- diagnostics, briefing, internet, ip, running apps, clipboard ---
+    
     if re.search(r"\b(system status|status report|diagnostics|system check|how is the system|how are the systems|cpu usage|memory usage|ram usage|disk space)\b", cmd):
         return system_status(title), None
     if re.search(r"\b(briefing|sitrep|brief me|daily brief)\b", cmd):
@@ -1477,7 +1440,7 @@ def handle(cmd: str, memory):
             return f"The clipboard is empty, {title}.", None
         return "The clipboard says: " + (text[:250] + ("..." if len(text) > 250 else "")), None
 
-    # --- weather / battery ---
+    
     if re.search(r"\b(weather|temperature|forecast)\b", cmd):
         m = re.search(r"\b(?:in|at|for) ([a-z ]+?)(?: today| now| right now| tomorrow| please)*$", cmd)
         city = m.group(1).strip() if m else config.HOME_CITY
@@ -1489,7 +1452,7 @@ def handle(cmd: str, memory):
         report = battery_report()
         return (report or f"I can't read the battery on this machine, {title}."), None
 
-    # --- math ---
+    
     m = re.match(r"^(?:what is|whats|calculate|compute|how much is|solve|work out)\s+(.+)$", cmd)
     if m:
         answer = calculate(m.group(1))
@@ -1498,7 +1461,7 @@ def handle(cmd: str, memory):
         if answer is not None:
             return f"That comes to {answer}, {title}.", None
 
-    # --- volume ---
+    
     m = re.search(r"\bvolume (?:to |at )?([a-z0-9 ]+?)(?: percent)?$", cmd)
     if m and to_int(m.group(1)) is not None:
         level = max(0, min(100, to_int(m.group(1))))
@@ -1513,7 +1476,7 @@ def handle(cmd: str, memory):
     if re.search(r"\b(mute|unmute)\b", cmd):
         return _can_do(_press("mute"), title, "that"), None
 
-    # --- brightness (laptop screens) ---
+    
     m = re.search(r"\bbrightness (?:to |at )?([a-z0-9 ]+?)(?: percent)?$", cmd)
     if m and to_int(m.group(1)) is not None:
         ok = set_brightness(to_int(m.group(1)))
@@ -1527,7 +1490,7 @@ def handle(cmd: str, memory):
         ok = cur is not None and set_brightness(cur - 20)
         return (config.ack() if ok else f"I can't change the brightness on this display, {title}."), None
 
-    # --- media keys ---
+    
     if re.search(r"\b(pause|resume|play pause|pause (?:the )?(?:music|video|song))\b", cmd) and not cmd.startswith("play "):
         _press("play_pause")
         return config.ack(), None
@@ -1538,7 +1501,7 @@ def handle(cmd: str, memory):
         _press("prev")
         return config.ack(), None
 
-    # --- windows ---
+    
     if re.search(r"\b(show (?:the )?desktop|minimi[sz]e (?:all|everything|all windows))\b", cmd):
         return _can_do(_hotkey("win", "d"), title), None
     if re.search(r"\b(switch (?:window|windows|app|apps)|next window|alt tab)\b", cmd):
@@ -1548,11 +1511,11 @@ def handle(cmd: str, memory):
     if re.search(r"\bminimi[sz]e (?:this |the )?(?:window)?$", cmd):
         return _can_do(_hotkey("win", "down"), title), None
 
-    # --- screenshot ---
+    
     if re.search(r"\b(screenshot|screen shot|capture (?:the |my )?screen)\b", cmd):
         return take_screenshot(title), None
 
-    # --- timers, reminders, alarms ---
+    
     m = re.search(r"\bremind me in (.+?) " + _UNIT_RE + r"\b(?: to (.+))?$", cmd)
     if m and to_int(m.group(1)) is not None:
         amount, unit, what = to_int(m.group(1)), m.group(2), m.group(3)
@@ -1569,17 +1532,17 @@ def handle(cmd: str, memory):
                    f"Alarm, {title}: {what}." if what else f"Your alarm is ringing, {title}.")
         day = "" if target.date() == datetime.date.today() else " tomorrow"
         return f"Alarm set for {_clock(target)}{day}, {title}.", None
-    m = re.search(r"\btimer (?:for )?(.+?) " + _UNIT_RE + r"\b", cmd)       # "timer for 5 minutes"
+    m = re.search(r"\btimer (?:for )?(.+?) " + _UNIT_RE + r"\b", cmd)       
     amount = to_int(m.group(1)) if m else None
     if amount is None:
-        m = re.search(r"\b(.+?) " + _UNIT_RE + r" timer\b", cmd)            # "a 10 minute timer"
+        m = re.search(r"\b(.+?) " + _UNIT_RE + r" timer\b", cmd)            
         amount = _number_at_end(m.group(1)) if m else None
     if m and amount is not None:
         unit = m.group(2)
         _add_alarm(_seconds(amount, unit), f"Your timer is up, {title}.")
         return f"Timer set for {_duration_text(amount, unit)}.", None
 
-    # --- notes / memory ---
+    
     m = re.match(r"^(?:take a note|make a note|write down|jot down|note down)(?: that)? (.+)$", cmd)
     if m:
         try:
@@ -1604,7 +1567,7 @@ def handle(cmd: str, memory):
         memory.add_note(m.group(1))
         return f"Noted, {title}.", None
 
-    # --- dice, coin, random number ---
+    
     if re.search(r"\b(flip a coin|toss a coin|heads or tails)\b", cmd):
         return f"{random.choice(['Heads', 'Tails'])}, {title}.", None
     if re.search(r"\b(roll a dice|roll a die|roll the dice|throw a dice)\b", cmd):
@@ -1614,7 +1577,7 @@ def handle(cmd: str, memory):
         lo, hi = sorted((int(m.group(1)), int(m.group(2))))
         return f"{random.randint(lo, hi)}, {title}.", None
 
-    # --- help ---
+    
     if re.search(r"\b(what can you do|help me|your commands|list commands)\b", cmd):
         return ("I can open and close apps, websites, folders and projects, lock the screen, run protocols like "
                 "work mode, WhatsApp or call your contacts and tell you about them, check weather, battery and "
@@ -1622,7 +1585,7 @@ def handle(cmd: str, memory):
                 "do sums, take notes, shut down or restart with your confirmation, and chat about anything, "
                 f"{title}."), None
 
-    # --- web ---
+    
     m = re.match(r"^(?:search|google|look up)(?: for)? (.+)$", cmd)
     if m:
         webbrowser.open("https://www.google.com/search?q=" + urllib.parse.quote_plus(m.group(1)))
@@ -1632,7 +1595,7 @@ def handle(cmd: str, memory):
         webbrowser.open("https://www.youtube.com/results?search_query=" + urllib.parse.quote_plus(m.group(1)))
         return f"Pulling up {m.group(1)} on YouTube.", None
 
-    # --- open a project in VS Code ---
+    
     m = re.match(r"^open (?:the |my )?(?:project )?(.+?) (?:project )?in (?:vs code|vscode|visual studio code|code)$", cmd)
     if m:
         name = m.group(1).strip()
@@ -1645,14 +1608,14 @@ def handle(cmd: str, memory):
         except OSError:
             return f"I could not start VS Code, {title}.", None
 
-    # --- Windows settings pages: "open wifi settings" ---
+    
     m = re.match(r"^open (?:the |my )?(.+?) settings$", cmd)
     if m and m.group(1).strip() in SETTINGS_PAGES:
         if _start(SETTINGS_PAGES[m.group(1).strip()]):
             return f"Opening {m.group(1).strip()} settings, {title}.", None
         return "I can only open settings pages on Windows.", None
 
-    # --- open an app / website / folder / project ---
+    
     m = re.match(r"^(?:open|launch|start) (?:the |my )?(.+)$", cmd)
     if m:
         name = m.group(1).strip()
@@ -1676,5 +1639,5 @@ def handle(cmd: str, memory):
             return f"I tried, {title}, but I could not open {name}.", None
         return f"I couldn't find {name} on this machine, {title}.", None
 
-    # --- live knowledge: Wikipedia, news, world time, currency, country facts (knowledge.py) ---
+    
     return knowledge.answer(cmd)
