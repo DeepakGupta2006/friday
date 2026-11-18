@@ -17,14 +17,14 @@ import llm
 import tools
 from memory import Memory
 
-HOST = os.environ.get("FRIDAY_HOST", "127.0.0.1")   # 127.0.0.1 = this PC only
+HOST = os.environ.get("FRIDAY_HOST", "127.0.0.1")   
 PORT = int(os.environ.get("FRIDAY_PORT", "8000"))
-TOKEN = os.environ.get("FRIDAY_TOKEN", "")          # required when HOST is not local
+TOKEN = os.environ.get("FRIDAY_TOKEN", "")         
 
 WEB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 app = Flask(__name__, static_folder=None)
 memory = Memory()
-lock = threading.Lock()          # one request at a time: she has one brain and one PC
+lock = threading.Lock()          
 
 
 def _authorized() -> bool:
@@ -90,7 +90,7 @@ def chat():
                 return
             try:
                 result = tools.handle(cmd, memory)
-            except Exception as e:                       # never crash the server on a bad command
+            except Exception as e:                      
                 yield _line(type="reply", text=f"I hit a snag running that, {config.USER_TITLE}: {e}")
                 yield _line(type="done")
                 return
@@ -101,7 +101,6 @@ def chat():
                 yield _line(type="done", action=action)
                 return
 
-            # No built-in command matched: ask the local model, streamed sentence by sentence.
             messages = [{"role": "system", "content": _system_prompt()},
                         *memory.history, {"role": "user", "content": text}]
             buf, full = "", ""
