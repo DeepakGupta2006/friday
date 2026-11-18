@@ -44,13 +44,13 @@ class Friday:
         self.barge = BargeMonitor(self.mic) if config.BARGE_IN else None
         self.key_stop = threading.Event()
         self.speaking = False
-        self.carry = None            # mic frames captured while she was interrupted
-        self.active_until = 0.0      # conversation window end (wake word not needed before this)
+        self.carry = None           
+        self.active_until = 0.0     
         self.sleeping = False
         if config.STOP_KEY:
             threading.Thread(target=self._key_listener, daemon=True).start()
 
-    # ----- stop key ----------------------------------------------------------
+
     def _key_listener(self):
         try:
             import msvcrt
@@ -67,7 +67,7 @@ class Friday:
             except Exception:
                 return
 
-    # ----- speaking helpers --------------------------------------------------
+   
     def should_stop(self) -> bool:
         if self.key_stop.is_set():
             return True
@@ -86,7 +86,7 @@ class Friday:
         self.speaking = False
         if self.barge:
             if self.barge.triggered:
-                self.carry = self.barge.carry()     # keep what you started saying
+                self.carry = self.barge.carry()     
             else:
                 self.mic.flush()
         else:
@@ -131,7 +131,7 @@ class Friday:
             prompt += "\n".join(f"- {n}" for n in self.memory.notes)
         return prompt
 
-    # ----- the LLM path ------------------------------------------------------
+   
     def llm_turn(self, text: str, t_end: float, t_asr: float):
         messages = [
             {"role": "system", "content": self.system_prompt()},
@@ -157,7 +157,7 @@ class Friday:
                         sentences.put(s)
                 if buf.strip() and not cancel.is_set():
                     sentences.put(buf.strip())
-            except Exception as e:  # Ollama stopped, model missing, etc.
+            except Exception as e:  
                 info["error"] = e
             finally:
                 sentences.put(None)
@@ -174,11 +174,11 @@ class Friday:
                 try:
                     sentence = sentences.get(timeout=0.05)
                 except queue.Empty:
-                    # still waiting for the model: you can already interrupt
+                   
                     if not interrupted and self.should_stop():
                         interrupted = True
                         cancel.set()
-                    # Jarvis-style filler so the pause is not silent
+                   
                     elif (not filler_said and not interrupted and "first_token" not in info
                           and time.perf_counter() - t_wait > config.THINKING_DELAY_S):
                         filler_said = True
@@ -222,7 +222,6 @@ class Friday:
                 f"started speaking {int((info['speaking'] - t_end) * 1000)} ms after you stopped"
             )
 
-    # ----- main loop ---------------------------------------------------------
     def run(self):
         self.say(self.greeting())
         if config.WAKE_REQUIRED:
@@ -236,7 +235,7 @@ class Friday:
                 audio = self.mic.listen(initial=self.carry, idle_cb=tools.has_due)
                 self.carry = None
 
-                if audio is None:                       # a timer or reminder is due
+                if audio is None:                      
                     for message in tools.pop_due():
                         self.say(message)
                     continue
@@ -262,7 +261,7 @@ class Friday:
 
                 self.active_until = time.time() + config.CONVERSATION_WINDOW_S
 
-                if not cmd:                             # she was only called by name
+                if not cmd:                             
                     if config.WAKE_CHIME:
                         self.chime()
                     self.say(f"Yes, {config.USER_TITLE}?")
