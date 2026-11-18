@@ -35,7 +35,7 @@ class Speaker:
             self._init_windows()
             self.backend = "windows"
 
-    # ----- Piper -------------------------------------------------------------
+    
     def _init_piper(self):
         if not os.path.exists(config.PIPER_VOICE):
             raise FileNotFoundError(config.PIPER_VOICE)
@@ -50,7 +50,7 @@ class Speaker:
             self.syn_config = SynthesisConfig(length_scale=config.PIPER_LENGTH_SCALE)
         except Exception:
             pass
-        list(self.piper.synthesize("Ready."))  # warm-up
+        list(self.piper.synthesize("Ready."))  
 
     def _synth_piper(self, text):
         kwargs = {"syn_config": self.syn_config} if self.syn_config else {}
@@ -59,7 +59,7 @@ class Speaker:
             return None, self.piper_rate
         return np.concatenate(chunks), self.piper_rate
 
-    # ----- Windows built-in voice -------------------------------------------
+    
     def _init_windows(self):
         import pyttsx3
 
@@ -92,7 +92,7 @@ class Speaker:
             except OSError:
                 pass
 
-    # ----- public ------------------------------------------------------------
+    
     def synth(self, text):
         if self.backend == "piper":
             return self._synth_piper(text)
@@ -107,7 +107,7 @@ class Speaker:
             audio, rate = None, 0
 
         if audio is None or len(audio) == 0:
-            # last resort: blocking Windows speech that cannot be interrupted
+            
             if self.engine is not None:
                 self.engine.say(text)
                 self.engine.runAndWait()
