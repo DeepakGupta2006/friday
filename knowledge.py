@@ -121,7 +121,7 @@ def world_time(place: str):
     return f"It is {when} on {day} in {place.title()}, {config.USER_TITLE}, {rel}."
 
 
-#currency
+#currency details
 CUR = {
     "usd": "USD", "dollar": "USD", "dollars": "USD", "us dollar": "USD", "us dollars": "USD",
     "inr": "INR", "rupee": "INR", "rupees": "INR", "indian rupee": "INR", "indian rupees": "INR",
